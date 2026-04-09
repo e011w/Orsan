@@ -1,0 +1,132 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information including role and contact details.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "admin", "technician"] },
+        "phone": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "A service offered by the platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "icon": { "type": "string" },
+        "priceEstimate": { "type": "string" },
+        "subServices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["id", "title", "category"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A service request from a customer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "serviceTitle": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "in-progress", "completed", "cancelled"] },
+        "details": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "scheduledTime": { "type": "timestamp" },
+        "createdAt": { "type": "timestamp" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "review": { "type": "string" }
+      },
+      "required": ["id", "userId", "serviceId", "status", "location", "scheduledTime", "createdAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A chat message between customer and technician.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "readBy": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["orderId", "senderId", "text", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "An in-app notification for a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "orderId": { "type": "string" },
+        "type": { "type": "string", "enum": ["status_update", "new_message", "new_order"] },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "timestamp" }
+      },
+      "required": ["userId", "title", "body", "type", "read", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles."
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Available services."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Service orders."
+    },
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Chat messages."
+    },
+    "/typing/{typingId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "isTyping": { "type": "boolean" },
+          "userId": { "type": "string" },
+          "orderId": { "type": "string" },
+          "updatedAt": { "type": "timestamp" }
+        }
+      },
+      "description": "Typing indicators."
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications."
+    }
+  }
+}
