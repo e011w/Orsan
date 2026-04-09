@@ -1,20 +1,26 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+// Initialize Firestore with experimentalForceLongPolling for better stability in some environments
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+}, firebaseConfig.firestoreDatabaseId);
+
 export const auth = getAuth();
 
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration. ");
+    if (error instanceof Error) {
+      if (error.message.includes('the client is offline') || error.message.includes('unavailable')) {
+        console.error("Firebase Connection Error: The client is unable to reach the Firestore backend. This may be due to network restrictions or an incorrect configuration.");
+      }
     }
-    // Skip logging for other errors, as this is simply a connection test.
   }
 }
 testConnection();

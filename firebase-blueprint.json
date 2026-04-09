@@ -62,7 +62,14 @@
         "createdAt": { "type": "timestamp" },
         "images": { "type": "array", "items": { "type": "string" } },
         "rating": { "type": "number" },
-        "review": { "type": "string" }
+        "review": { "type": "string" },
+        "workerInfo": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" }
+          }
+        }
       },
       "required": ["id", "userId", "serviceId", "status", "location", "scheduledTime", "createdAt"]
     },
@@ -93,6 +100,19 @@
         "createdAt": { "type": "timestamp" }
       },
       "required": ["userId", "title", "body", "type", "read", "createdAt"]
+    },
+    "AppSettings": {
+      "title": "App Settings",
+      "description": "Global application settings like contact info and about text.",
+      "type": "object",
+      "properties": {
+        "whatsapp": { "type": "string" },
+        "facebook": { "type": "string" },
+        "instagram": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "aboutText": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -127,6 +147,10 @@
     "/notifications/{notificationId}": {
       "schema": "Notification",
       "description": "User notifications."
+    },
+    "/settings/{settingId}": {
+      "schema": "AppSettings",
+      "description": "Global app settings."
     }
   }
 }

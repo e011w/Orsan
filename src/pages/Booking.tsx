@@ -20,6 +20,7 @@ import { collection, addDoc, query, where, getDocs, doc, getDoc, serverTimestamp
 import { cn } from '../lib/utils';
 import { useNotifications } from '../components/NotificationProvider';
 import { handleFirestoreError, OperationType } from '../lib/error-handler';
+import { toast } from 'sonner';
 import { Service } from '../types';
 
 const steps = [
@@ -84,9 +85,11 @@ export default function Booking() {
         (error) => {
           console.error(error);
           setLoading(false);
-          alert('تعذر تحديد الموقع. يرجى إدخال العنوان يدوياً.');
+          toast.error('تعذر تحديد الموقع. يرجى إدخال العنوان يدوياً.');
         }
       );
+    } else {
+      toast.error('تحديد الموقع غير مدعوم في هذا المتصفح');
     }
   };
 

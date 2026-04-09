@@ -33,6 +33,10 @@ export interface Order {
   images?: string[];
   rating?: number;
   review?: string;
+  workerInfo?: {
+    name: string;
+    phone: string;
+  };
 }
 
 export interface UserProfile {
@@ -62,4 +66,13 @@ export interface AppNotification {
   type: 'status_update' | 'new_message' | 'new_order';
   read: boolean;
   createdAt: any;
+}
+
+export interface AppSettings {
+  whatsapp?: string;
+  facebook?: string;
+  instagram?: string;
+  phone?: string;
+  location?: string;
+  aboutText?: string;
 }

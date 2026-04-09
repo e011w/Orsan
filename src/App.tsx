@@ -33,14 +33,26 @@ export default function App() {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             const profileData = userDoc.data() as UserProfile;
-            setProfile(profileData);
-            if (profileData.role === 'admin') {
+            const isAdminEmail = user.email?.toLowerCase() === 'msdan07@gmail.com' || 
+                               user.email?.toLowerCase() === 'studentforum9019@gmail.com' || 
+                               user.email?.toLowerCase() === 'mohammed@gmail.com';
+            
+            if (isAdminEmail && profileData.role !== 'admin') {
+              // Auto-upgrade to admin if hardcoded
+              const updatedProfile = { ...profileData, role: 'admin' as const };
+              await setDoc(doc(db, 'users', user.uid), updatedProfile, { merge: true });
+              setProfile(updatedProfile);
+            } else {
+              setProfile(profileData);
+            }
+            
+            if (profileData.role === 'admin' || isAdminEmail) {
               seedServices();
             }
           } else {
-            const isAdminEmail = user.email === 'studentforum9019@gmail.com' || 
-                               user.email === 'Mohammed@gmail.com' || 
-                               user.email === 'msdan07@gmail.com';
+            const isAdminEmail = user.email?.toLowerCase() === 'msdan07@gmail.com' || 
+                               user.email?.toLowerCase() === 'studentforum9019@gmail.com' || 
+                               user.email?.toLowerCase() === 'mohammed@gmail.com';
             const newProfile: UserProfile = {
               uid: user.uid,
               email: user.email || '',

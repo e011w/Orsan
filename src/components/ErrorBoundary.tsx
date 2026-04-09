@@ -38,8 +38,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
       try {
         // Check if it's a JSON error from our Firestore handler
         const parsed = JSON.parse(this.state.error?.message || '');
-        if (parsed.error && parsed.error.includes('insufficient permissions')) {
-          errorMessage = 'عذراً، ليس لديك الصلاحيات الكافية لإتمام هذه العملية.';
+        if (parsed.error) {
+          if (parsed.error.includes('insufficient permissions')) {
+            errorMessage = 'عذراً، ليس لديك الصلاحيات الكافية لإتمام هذه العملية.';
+          } else if (parsed.error.includes('unavailable') || parsed.error.includes('Could not reach Cloud Firestore backend')) {
+            errorMessage = 'عذراً، لا يمكن الاتصال بخوادم قاعدة البيانات حالياً. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.';
+          }
         }
       } catch (e) {
         // Not a JSON error

@@ -20,15 +20,34 @@ import { Bell, MessageSquare, Package, CheckCircle } from 'lucide-react';
 import { handleFirestoreError, OperationType } from '../lib/error-handler';
 
 interface NotificationContextType {
+  notifications: AppNotification[];
+  unreadCount: number;
   createNotification: (userId: string, title: string, body: string, type: AppNotification['type'], orderId?: string) => Promise<void>;
+  markAsRead: (notificationId: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
+  const [notifications, setNotifications] = React.useState<AppNotification[]>([]);
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
   useEffect(() => {
+    let unsubscribeSnapshot: (() => void) | null = null;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      if (!user) return;
+      // Clean up previous listener if it exists
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
+      }
+
+      if (!user) {
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
 
       // Request browser notification permission
       if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -40,12 +59,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const q = query(
         collection(db, 'notifications'),
         where('userId', '==', user.uid),
-        where('read', '==', false),
         orderBy('createdAt', 'desc'),
-        limit(5)
+        limit(20)
       );
 
-      const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+      unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+        const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppNotification));
+        setNotifications(notifs);
+        setUnreadCount(notifs.filter(n => !n.read).length);
+
         snapshot.docChanges().forEach((change) => {
           if (change.type === 'added') {
             const notification = { id: change.doc.id, ...change.doc.data() } as AppNotification;
@@ -60,15 +82,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         });
       }, (error) => {
         // Only log if it's not a cancelled error (happens on logout)
-        if (error.code !== 'cancelled') {
+        if (error.code !== 'cancelled' && error.code !== 'permission-denied') {
           handleFirestoreError(error, OperationType.GET, 'notifications');
         }
       });
-
-      return () => unsubscribeSnapshot();
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+    };
   }, []);
 
   const showNotification = (notification: AppNotification) => {
@@ -116,8 +141,25 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await updateDoc(doc(db, 'notifications', notificationId), { read: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `notifications/${notificationId}`);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const unread = notifications.filter(n => !n.read);
+      await Promise.all(unread.map(n => updateDoc(doc(db, 'notifications', n.id), { read: true })));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'notifications');
+    }
+  };
+
   return (
-    <NotificationContext.Provider value={{ createNotification }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, createNotification, markAsRead, markAllAsRead }}>
       {children}
     </NotificationContext.Provider>
   );

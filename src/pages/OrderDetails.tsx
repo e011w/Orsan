@@ -21,6 +21,7 @@ import { Order, Message, UserProfile } from '../types';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useNotifications } from '../components/NotificationProvider';
+import { toast } from 'sonner';
 import { Input } from '../components/ui/Input';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -298,7 +299,7 @@ export default function OrderDetails() {
         });
       } else {
         navigator.clipboard.writeText(url);
-        alert('تم نسخ رابط الموقع');
+        toast.success('تم نسخ رابط الموقع');
       }
     }
   };
