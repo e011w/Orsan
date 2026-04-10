@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OrsanServices</string>
+    <string name="title_activity_main">OrsanServices</string>
+    <string name="package_name">com.orsan.services</string>
+    <string name="custom_url_scheme">com.orsan.services</string>
+</resources>
