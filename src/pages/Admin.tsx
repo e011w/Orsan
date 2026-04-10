@@ -185,7 +185,7 @@ export default function Admin() {
       const missingUserIds = userIds.filter(uid => !orderUsers[uid]);
       if (missingUserIds.length === 0) return;
 
-      const newUserProfiles = { ...orderUsers };
+      const newUserProfiles: Record<string, UserProfile> = {};
       await Promise.all(missingUserIds.map(async (uid: string) => {
         try {
           const userDoc = await getDoc(doc(db, 'users', uid));
@@ -196,11 +196,14 @@ export default function Admin() {
           console.error('Error fetching user:', uid, e);
         }
       }));
-      setOrderUsers(newUserProfiles);
+      
+      if (Object.keys(newUserProfiles).length > 0) {
+        setOrderUsers(prev => ({ ...prev, ...newUserProfiles }));
+      }
     };
 
     if (orders.length > 0) fetchUsers();
-  }, [orders, orderUsers]);
+  }, [orders]); // Removed orderUsers from dependency array to prevent loops
 
   const updateStatus = async (orderId: string, newStatus: Order['status']) => {
     const path = `orders/${orderId}`;
@@ -647,6 +650,11 @@ export default function Admin() {
                                 <div>
                                   <p className="text-[10px] text-gray-400 font-medium">العميل</p>
                                   <p className="font-bold">{customer ? customer.displayName : `عميل: ${order.userId.slice(0, 8)}`}</p>
+                                  {customer?.phone && (
+                                    <a href={`tel:${customer.phone}`} className="text-xs text-gold hover:underline mt-0.5 inline-block" onClick={(e) => e.stopPropagation()}>
+                                      {customer.phone}
+                                    </a>
+                                  )}
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 text-xs text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100">

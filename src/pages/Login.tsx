@@ -7,10 +7,11 @@ import {
   updateProfile,
   sendPasswordResetEmail 
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { LogIn, Mail, Lock, User, ArrowLeft, ArrowRight, Info, Sparkles, ShieldCheck } from 'lucide-react';
+import { LogIn, Mail, Lock, User, ArrowLeft, ArrowRight, Info, Sparkles, ShieldCheck, Phone } from 'lucide-react';
 import Logo from '../components/Logo';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -24,6 +25,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -53,14 +55,30 @@ export default function Login() {
         setIsForgotPassword(false);
       } else if (isSignUp) {
         if (!displayName) throw new Error('يرجى إدخال الاسم');
+        if (!phone) throw new Error('يرجى إدخال رقم الهاتف');
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
+        
+        // Save full user profile to Firestore to satisfy security rules
+        const isAdminEmail = email.toLowerCase() === 'msdan07@gmail.com' || 
+                           email.toLowerCase() === 'studentforum9019@gmail.com' || 
+                           email.toLowerCase() === 'mohammed@gmail.com';
+                           
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          email: email,
+          displayName: displayName,
+          phone: phone,
+          role: isAdminEmail ? 'admin' : 'customer',
+          createdAt: serverTimestamp()
+        });
+        
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err: any) {
       console.error(err);
-      let msg = 'حدث خطأ. يرجى التأكد من البيانات والمحاولة مرة أخرى.';
+      let msg = err.message || 'حدث خطأ. يرجى التأكد من البيانات والمحاولة مرة أخرى.';
       if (err.code === 'auth/email-already-in-use') {
         msg = 'هذا البريد الإلكتروني مسجل بالفعل. هل تريد تسجيل الدخول بدلاً من ذلك؟';
       }
@@ -190,18 +208,35 @@ export default function Login() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
+                    className="space-y-4"
                   >
-                    <label className="text-xs font-bold text-gray-400 mr-2 uppercase tracking-widest">الاسم الكامل</label>
-                    <div className="relative group">
-                      <User className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gold transition-colors w-5 h-5" />
-                      <Input
-                        placeholder="أدخل اسمك الكامل"
-                        className="pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-gold/50 focus:ring-gold/10 rounded-2xl transition-all"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        required
-                      />
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 mr-2 uppercase tracking-widest">الاسم الكامل</label>
+                      <div className="relative group">
+                        <User className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gold transition-colors w-5 h-5" />
+                        <Input
+                          placeholder="أدخل اسمك الكامل"
+                          className="pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-gold/50 focus:ring-gold/10 rounded-2xl transition-all"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 mr-2 uppercase tracking-widest">رقم الهاتف</label>
+                      <div className="relative group">
+                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gold transition-colors w-5 h-5" />
+                        <Input
+                          type="tel"
+                          placeholder="05xxxxxxxx"
+                          className="pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-gold/50 focus:ring-gold/10 rounded-2xl transition-all text-left"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          required
+                          dir="ltr"
+                        />
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -264,7 +299,7 @@ export default function Login() {
                   </motion.div>
                 ) : (
                   <>
-                    {isForgotPassword ? 'إرسال رابط الاستعادة' : (isSignUp ? 'إنشاء حساب فاخر' : 'دخول آمن')}
+                    {isForgotPassword ? 'إرسال رابط الاستعادة' : (isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول')}
                     <ShieldCheck className="w-5 h-5" />
                   </>
                 )}
@@ -356,7 +391,7 @@ export default function Login() {
         </motion.div>
 
         <div className="absolute bottom-8 text-[10px] text-gray-700 uppercase tracking-widest">
-          &copy; {new Date().getFullYear()} ORSAN PREMIUM SERVICES
+          &copy; {new Date().getFullYear()}
         </div>
       </div>
     </div>

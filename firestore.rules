@@ -96,9 +96,12 @@ service cloud.firestore {
              data.location.address is string && data.location.address.size() < 500 &&
              data.scheduledTime is timestamp &&
              data.createdAt is timestamp && isRecent(data.createdAt) &&
+             (!('serviceTitle' in data) || (data.serviceTitle is string && data.serviceTitle.size() < 100)) &&
+             (!('subServiceTitle' in data) || (data.subServiceTitle is string && data.subServiceTitle.size() < 100)) &&
              (!('images' in data) || (data.images is list && data.images.size() <= 5)) &&
              (!('rating' in data) || (data.rating is number && data.rating >= 1 && data.rating <= 5)) &&
-             (!('review' in data) || (data.review is string && data.review.size() < 500));
+             (!('review' in data) || (data.review is string && data.review.size() < 500)) &&
+             (!('workerInfo' in data) || (data.workerInfo == null || (data.workerInfo is map && (!('name' in data.workerInfo) || data.workerInfo.name is string) && (!('phone' in data.workerInfo) || data.workerInfo.phone is string))));
     }
 
     function isValidMessage(data) {

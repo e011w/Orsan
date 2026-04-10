@@ -131,20 +131,19 @@ export default function Home() {
               <motion.div
                 key={service.id}
                 variants={itemVariants}
-                whileHover={{ y: -8, scale: 1.02 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.98 }}
                 className="group relative"
               >
                 {/* Premium Shadow Effect */}
-                <div className="absolute inset-4 bg-gold/30 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full" />
+                <div className="absolute inset-4 bg-gold/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
                 
                 <Card 
-                  className="h-full cursor-pointer bg-gold border-none shadow-[0_15px_35px_rgba(212,175,55,0.25)] hover:shadow-[0_25px_50px_rgba(212,175,55,0.4)] transition-all duration-500 p-0 rounded-[2.5rem] md:rounded-[3.5rem] relative overflow-hidden flex flex-col group"
+                  className="h-full cursor-pointer bg-gold border-none shadow-[0_10px_20px_rgba(212,175,55,0.2)] hover:shadow-[0_15px_30px_rgba(212,175,55,0.3)] transition-all duration-300 p-0 rounded-[2.5rem] md:rounded-[3.5rem] relative overflow-hidden flex flex-col group"
                   onClick={() => navigate(`/services/${service.id}`)}
                 >
                   {/* Atmospheric Pattern Overlay */}
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.05] pointer-events-none" />
-                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/20 rounded-full blur-3xl group-hover:bg-white/30 transition-colors duration-700" />
+                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors duration-500" />
                   
                   {/* Content Container */}
                   <div className="p-5 md:p-8 flex flex-col h-full relative z-10">

@@ -468,6 +468,35 @@ export default function OrderDetails() {
           </div>
         )}
 
+        {/* Worker Info */}
+        {order.workerInfo && (
+          <div className="bg-green-50/50 rounded-3xl p-5 border border-green-100/50 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-green-600">
+                <UserIcon className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">العامل المرسل</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-green-100">
+                <UserIcon className="w-7 h-7 text-green-600/40" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-lg text-black-soft">{order.workerInfo.name}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  {order.workerInfo.phone && (
+                    <a href={`tel:${order.workerInfo.phone}`} className="flex items-center gap-1.5 text-xs text-green-600 hover:underline font-medium">
+                      <Phone className="w-3 h-3" />
+                      {order.workerInfo.phone}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex items-center gap-4 text-sm text-gray-600 bg-gray-50/50 p-4 rounded-3xl border border-gray-100/50">
             <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-sm">
